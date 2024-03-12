@@ -38,7 +38,7 @@ for (let i = 0; i < 46; i++) {
   });
 }
 
-const Dashboard = () => {
+const SellerDashboard = () => {
   const salesData = [
     {
       type: "Jan",
@@ -157,4 +157,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default SellerDashboard;

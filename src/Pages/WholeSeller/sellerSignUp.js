@@ -1,10 +1,12 @@
 import React from "react";
 import BreadCrumb from "../../Components/BreadCrumb";
 import Meta from "../../Components/Meta";
+import Bar from "../../Components/Bar";
 
 const SellerSignUp = () => {
   return (
     <>
+      <Bar />
       <Meta title={"Become a Seller"} />
       <BreadCrumb title="Become a Seller" />
       <div className="login-wrapper home-wrapper-2 py-5">
