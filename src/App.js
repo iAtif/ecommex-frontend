@@ -26,6 +26,7 @@ import PrivateRoute from "./Components/Routes/userPrivate";
 /* SELLER ROUTES */
 import SellerLogin from "./Pages/WholeSeller/sellerLogin";
 import SellerSignUp from "./Pages/WholeSeller/sellerSignUp";
+import SellerDashboard from "./Pages/WholeSeller/sellerDashboard";
 
 function App() {
   return (
@@ -43,11 +44,6 @@ function App() {
             <Route path="wishlist" element={<Wishlist />} />
             <Route path="cart" element={<Cart />} />
             <Route path="blogs" element={<Blog />} />
-            {/* Admin Auth */}
-            <Route path="admin" element={<AdminLogin />} />
-            <Route path="admin-dashboard" element={<PrivateRoute />}>
-              <Route path="" element={<AdminDashboard />} />
-            </Route>
             {/* User Auth */}
             <Route path="login" element={<Login />} />
             <Route path="dashboard" element={<PrivateRoute />}>
@@ -56,10 +52,16 @@ function App() {
             <Route path="register" element={<SignUp />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="reset-password" element={<ResetPassword />} />
-            {/* WholeSaler Auth */}
-            <Route path="seller-login" element={<SellerLogin />} />
-            <Route path="seller-signup" element={<SellerSignUp />} />
           </Route>
+          {/* Admin Auth */}
+          <Route path="admin" element={<AdminLogin />} />
+          <Route path="admin-dashboard" element={<PrivateRoute />}>
+            <Route path="" element={<AdminDashboard />} />
+          </Route>
+          {/* WholeSaler Auth */}
+          <Route path="seller-login" element={<SellerLogin />} />
+          <Route path="seller-signup" element={<SellerSignUp />} />
+          <Route path="seller-dashboard" element={<SellerDashboard />} />
         </Routes>
       </BrowserRouter>
     </>
