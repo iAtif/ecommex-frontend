@@ -7,14 +7,15 @@ import { Link } from "react-router-dom";
 
 const ForgotPassword = () => {
   const [email, setemail] = useState("");
-  const [secret, setsecret] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const res = await axios.post(
-        `${process.env.REACT_APP_API}/api/auth/forgot-password`,
-        { email, secret }
+        `http://localhost:5000/auth/seller/forgot-password`,
+        { email }
       );
       if (res.data.success) {
         toast.success(res.data.message);
@@ -22,8 +23,15 @@ const ForgotPassword = () => {
         toast.error(res.data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+      if (error.response && error.response.status === 400) {
+        // If the server returns a 400 error, display the error message
+        toast.error(error.response.data.message);
+      } else {
+        console.log(error);
+        toast.error("Something went wrong");
+      }
+    } finally {
+      setIsLoading(false); // Reset loading status to false
     }
   };
 
@@ -38,7 +46,7 @@ const ForgotPassword = () => {
               <div className="auth-card">
                 <h3 className="text-center mb-3">Reset Your Password</h3>
                 <p className="text-center my-2 mb-3">
-                  Enter Your Email & Secret Text to Reset Your Password
+                  Enter Your Email to Reset Your Password
                 </p>
                 <form
                   onSubmit={handleSubmit}
@@ -52,23 +60,18 @@ const ForgotPassword = () => {
                       name="email"
                       placeholder="Enter Your Email"
                       className="form-control"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      value={secret}
-                      onChange={(e) => setsecret(e.target.value)}
-                      name="secret"
-                      placeholder="Enter Your Secret Text"
-                      className="form-control"
+                      required
                     />
                   </div>
                   <div>
                     <div className="mt-3 d-flex justify-content-center flex-column gap-15 align-items-center">
-                      <button className="button border-0" type="submit">
-                        Submit
-                      </button>
+                      {isLoading ? (
+                        <div className="spinner"></div>
+                      ) : (
+                        <button className="button border-0" type="submit">
+                          Submit
+                        </button>
+                      )}
                       <Link to="/login">Cancel</Link>
                     </div>
                   </div>

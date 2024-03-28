@@ -89,10 +89,9 @@ const SellerDashboard = () => {
       sales: 38,
     },
   ];
-
   return (
     <div>
-      <h3 className="mb-4 title">Dashboard</h3>
+      <h3 className="mb-4 title">WholeSeller Dashboard</h3>
       <div className="d-flex justify-content-between align-items-center gap-3">
         <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
           <div>

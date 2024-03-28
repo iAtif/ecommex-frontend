@@ -10,17 +10,15 @@ export default function PrivateRoute() {
 
   useEffect(() => {
     const authCheck = async () => {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API}/api/auth/user-auth`
-      );
+      const res = await axios.get(`http://localhost:5000/api/protected`);
       if (res.data.ok) {
         setOk(true);
       } else {
         setOk(false);
       }
     };
-    if (auth?.token) authCheck();
-  }, [auth?.token]);
+    if (auth?.user.token) authCheck();
+  }, [auth?.user.token]);
 
   return ok ? <Outlet /> : <Spinner />;
 }

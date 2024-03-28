@@ -1,11 +1,12 @@
 import React from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
 import { useAuth } from "../Context/auth";
 import toast from "react-hot-toast";
 
 const Header = () => {
   const [auth, setAuth] = useAuth();
+  const location = useLocation();
 
   const handleLogout = () => {
     setAuth({
@@ -16,19 +17,26 @@ const Header = () => {
     localStorage.removeItem("auth");
     toast.success("Logout Successfully");
   };
+
+  const isActiveLink = (path) => {
+    return location.pathname === path;
+  };
+
   return (
     <>
-      <header className="header-top-strip">
-        <div className="container-xxl">
-          <div className="row">
-            <div className="col-12 text-end">
-              <Link to="/seller-signup" className="text-white">
-                Become a Seller
-              </Link>
+      {!auth.user && (
+        <header className="header-top-strip">
+          <div className="container-xxl">
+            <div className="row">
+              <div className="col-12 text-end">
+                <Link to="/seller-register" className="text-white">
+                  Become a Seller
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
       <header className="header-upper py-2">
         <div className="container-xxl">
           <div className="row align-items-center">
@@ -63,7 +71,11 @@ const Header = () => {
                     to="/compare"
                   >
                     <img src="/images/compare.svg" alt="compare"></img>
-                    <p className="mb-0">
+                    <p
+                      className={
+                        isActiveLink("/compare") ? "active-upper-links" : "mb-0"
+                      }
+                    >
                       Compare <br /> Products
                     </p>
                   </Link>
@@ -74,7 +86,15 @@ const Header = () => {
                     to="/wishlist"
                   >
                     <img src="/images/wishlist.svg" alt="wishlist"></img>
-                    <p className="mb-0">Wishlist</p>
+                    <p
+                      className={
+                        isActiveLink("/wishlist")
+                          ? "active-upper-links"
+                          : "mb-0"
+                      }
+                    >
+                      Wishlist
+                    </p>
                   </Link>
                 </div>
                 <div>
@@ -82,10 +102,20 @@ const Header = () => {
                     className="d-flex align-items-center gap-10 text-white"
                     to="/cart"
                   >
-                    <img src="/images/cart.svg" alt="cart"></img>
-                    <div className="gap-10">
-                      <span className="badge bg-white text-dark">5</span>
-                      <p className="mb-0">500PKR</p>
+                    <img
+                      src="/images/cart.svg"
+                      alt="cart"
+                      style={{ position: "relative" }}
+                    />
+                    <div className="gap-10" style={{ position: "relative" }}>
+                      <p
+                        className={
+                          isActiveLink("/cart") ? "active-upper-links" : "mb-0"
+                        }
+                      >
+                        My Cart
+                      </p>
+                      <span className="badge bg-white text-dark">1</span>
                     </div>
                   </Link>
                 </div>
@@ -98,7 +128,13 @@ const Header = () => {
                     aria-expanded="false"
                   >
                     <img src="images/user.svg" alt="user" />
-                    <span className="d-inline-block">My Account</span>
+                    {auth.user ? (
+                      <span className="d-inline-block">
+                        Hi, {auth.user.firstName}
+                      </span>
+                    ) : (
+                      <span className="d-inline-block">My Account</span>
+                    )}
                   </button>
                   {!auth.user ? (
                     <>
@@ -130,9 +166,7 @@ const Header = () => {
                         className="dropdown-menu"
                         aria-labelledby="dropdownMenuButton2"
                       >
-                        <span className="d-flex justify-content-center text-white">
-                          Hi, {auth?.user?.firstname}
-                        </span>
+                        <span className="d-flex justify-content-center text-white"></span>
                         <li>
                           <Link
                             className="dropdown-item text-white"
@@ -159,12 +193,19 @@ const Header = () => {
           </div>
         </div>
       </header>
-      <header className="header-bottom py-1">
+      <header
+        className="header-bottom py-1"
+        style={{
+          height: !isActiveLink("/home") ? "38px" : "auto",
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <div className="container-xxl">
           <div className="row">
             <div className="col-12">
               <div className="menu-bottom d-flex align-items-center gap-30">
-                <div>
+                {isActiveLink("/") && (
                   <div className="dropdown">
                     <button
                       className="btn btn-secondary dropdown-toggle bg-transparent border-0 gap-15 d-flex align-items-center"
@@ -200,14 +241,35 @@ const Header = () => {
                       </li>
                     </ul>
                   </div>
-                </div>
+                )}
                 <div className="menu-links">
                   <div className="d-flex align-items-center gap-20">
-                    <NavLink to="/">Home</NavLink>
-                    <NavLink to="/products">Our Store</NavLink>
-                    <NavLink to="/trending">Trending Products</NavLink>
+                    <NavLink
+                      exact
+                      to="/"
+                      className={isActiveLink("/") ? "active-link" : ""}
+                    >
+                      Home
+                    </NavLink>
+                    <NavLink
+                      to="/products"
+                      className={isActiveLink("/products") ? "active-link" : ""}
+                    >
+                      Our Store
+                    </NavLink>
+                    <NavLink
+                      to="/trending"
+                      className={isActiveLink("/trending") ? "active-link" : ""}
+                    >
+                      Trending Products
+                    </NavLink>
                     {/* <NavLink to="/blogs">Our Blogs</NavLink> */}
-                    <NavLink to="/contact">Contact Us</NavLink>
+                    <NavLink
+                      to="/contact"
+                      className={isActiveLink("/contact") ? "active-link" : ""}
+                    >
+                      Contact Us
+                    </NavLink>
                   </div>
                 </div>
               </div>

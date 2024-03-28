@@ -17,12 +17,12 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_API}/api/auth/login`,
-        { email, password }
-      );
+      const res = await axios.post(`http://localhost:5000/auth/seller/login`, {
+        email,
+        password,
+      });
       if (res.data.success) {
-        toast.success(res.data.message);
+        toast.success("Login Successful");
         setAuth({
           ...auth,
           user: res.data.user,
@@ -30,12 +30,19 @@ const Login = () => {
         });
         localStorage.setItem("auth", JSON.stringify(res.data));
         navigate(location.state || "/");
+        console.log(auth);
       } else {
+        console.log(res);
         toast.error(res.data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+      if (error.response && error.response.status === 400) {
+        // If the server returns a 400 error, display the error message
+        toast.error(error.response.data.message);
+      } else {
+        console.log(error);
+        toast.error("Something went wrong");
+      }
     }
   };
 
@@ -43,7 +50,7 @@ const Login = () => {
     <>
       <Meta title={"Login"} />
       <BreadCrumb title="Login" />
-      <div className="login-wrapper home-wrapper-2 py-5">
+      <div className="login-wrapper home-wrapper-2 py-2">
         <div className="container-xxl">
           <div className="row">
             <div className="col-12">

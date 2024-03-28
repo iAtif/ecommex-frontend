@@ -20,6 +20,19 @@
   color: red;
   padding-left: 5px;
 }
+.spinner {
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-left-color: var(--color-232f3e);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .section-heading {
   font-size: 26px;
   line-height: 32px;
@@ -69,7 +82,7 @@ a {
   height: 18px;
   font-size: 12px;
 }
-
+/* Header Upper */
 .header-upper {
   background-color: var(--color-131921);
 }
@@ -101,7 +114,24 @@ a {
   background-color: transparent;
   color: var(--color-febd69) !important;
 }
-
+.header-upper-links p:hover {
+  color: var(--color-febd69);
+}
+.active-upper-links {
+  color: var(--color-febd69);
+  margin-bottom: 0px;
+} 
+.header-upper-links .badge { 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  top: -12px;
+  right: 60px;
+}
 /* Header Bottom */
 .header-bottom .menu-links a,
 .header-bottom .dropdown button {
@@ -111,6 +141,12 @@ a {
   font-weight: 400;
   letter-spacing: 0.3;
   text-transform: uppercase;
+}
+.header-bottom .menu-links .active-link {
+  color:  var(--color-febd69);
+}
+.header-bottom .menu-links a:hover {
+  color: var(--color-febd69);
 }
 .header-bottom .dropdown button:focus {
   box-shadow: none;
@@ -146,6 +182,9 @@ footer .input-group-text {
   background-color: var(--color-232f3e);
   color: white;
   padding: 8px 17px;
+}
+.footer-links a:hover {
+  color: #febd69 !important;
 }
 /* Footer End */
 
@@ -462,7 +501,7 @@ footer .input-group-text {
 .auth-card {
   padding: 20px;
   background-color: white;
-  width: 500px;
+  width: 460px;
   margin: 30px auto;
   border-radius: 10px;
   box-shadow: 0 0 10px #0000001a;
@@ -694,5 +733,110 @@ footer .input-group-text {
   font-size: 14px;
   color: var(--color-1c1b1b);
 }
-
 /* Cart Page */
+
+/* ADMIN & WHOLESELLER DASHBOARD STARTS */
+.green {
+  color: var(--color-47ad24);
+  font-size: 14px;
+}
+.red {
+  color: var(--color-e52e2e);
+  font-size: 14px;
+}
+.quill {
+  background-color: white;
+}
+/* Title */
+.title {
+  font: 34px;
+  font-weight: 600;
+  color: var(--color-47ad24);
+  text-align: center;
+}
+.desc {
+  font: 14px;
+  color: var(--color-828599);
+}
+
+.trigger {
+  padding: 0 24px;
+  font-size: 18px;
+  line-height: 64px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+.logo {
+  height: 32px;
+  margin: 16px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.ant-layout {
+  min-height: 100vh;
+}
+
+.ant-layout-sider {
+  flex: 0 0 250px !important;
+  max-width: 250px !important;
+  min-width: 250px !important;
+  width: 250px !important;
+}
+
+.ant-layout-sider-collapsed {
+  flex: 0 0 80px !important;
+  max-width: 80px !important;
+  min-width: 80px !important;
+  width: 80px !important;
+}
+
+.sm-logo {
+  display: none;
+}
+
+.ant-layout-sider-collapsed .sm-logo {
+  display: block;
+}
+
+.ant-layout-sider-collapsed .lg-logo {
+  display: none;
+}
+
+.logo {
+  background-color: #ffd333;
+  margin: 0;
+  height: 64px;
+}
+
+
+main {
+  height: 85vh;
+  overflow-y: scroll;
+  background-color: transparent !important;
+}
+main::-webkit-scrollbar {
+  width: 0px;
+}
+.ant-menu-title-content {
+  font-size: 16px;
+}
+.ant-layout-header h5 {
+  line-height: 20px;
+  font-size: 14px;
+}
+.ant-layout-header p {
+  line-height: 20px;
+  font-size: 13px;
+}
+.ant-layout-header div .badge {
+  top: 16px;
+  right: -6px;
+}
+.ant-menu-item-icon {
+  font-size: 22px !important;
+}
