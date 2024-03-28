@@ -133,8 +133,9 @@ const OurStore = () => {
                       name="sortSelect"
                       className="form-control form-select"
                       id="sortSelect"
-                      defaultValue="best-selling"
+                      defaultValue="all-products"
                     >
+                      <option value="all-products">All Products</option>
                       <option value="best-selling">Best Selling</option>
                       <option value="title-ascending">
                         Alphabetically, A-Z

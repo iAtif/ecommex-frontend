@@ -1,25 +1,27 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import BreadCrumb from "../../Components/BreadCrumb";
 import Meta from "../../Components/Meta";
-import Bar from "../../Components/Bar";
 import toast from "react-hot-toast";
+import Bar from "../../Components/Bar";
 import axios from "axios";
 
-const AdminForgotPassword = () => {
-  const [email, setemail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const SellerResetPassword = () => {
+  const [newPassword, setnewPassword] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    const token = new URLSearchParams(location.search).get("token");
     try {
       const res = await axios.post(
-        `http://localhost:5000/auth/admin/forgot-password`,
-        { email }
+        `http://localhost:5000/auth/wholeSeller/reset-password`,
+        { token, newPassword }
       );
       if (res.data.success) {
         toast.success(res.data.message);
+        navigate("/seller-login");
       } else {
         toast.error(res.data.message);
       }
@@ -31,53 +33,43 @@ const AdminForgotPassword = () => {
         console.log(error);
         toast.error("Something went wrong");
       }
-    } finally {
-      setIsLoading(false); // Reset loading status to false
     }
   };
 
   return (
     <>
       <Bar />
-      <Meta title={"Forgot Password"} />
-      <BreadCrumb title="Forgot Password" />
+      <Meta title={"Reset Password"} />
+      <BreadCrumb title="Reset Password" />
       <div
         className="login-wrapper home-wrapper-2"
-        style={{ padding: "146px" }}
+        style={{ padding: "180px" }}
       >
         <div className="container-xxl">
           <div className="row">
             <div className="col-12">
               <div className="auth-card">
-                <h3 className="text-center mb-3">Reset Your Password</h3>
-                <p className="text-center my-2 mb-3">
-                  Enter Your Email to Reset Your Password
-                </p>
+                <h3 className="text-center mb-3">Reset Password</h3>
                 <form
                   onSubmit={handleSubmit}
                   className="d-flex flex-column gap-15"
                 >
                   <div>
                     <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setemail(e.target.value)}
-                      name="email"
-                      placeholder="Enter Your Email"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setnewPassword(e.target.value)}
+                      name="newPassword"
+                      placeholder="Enter Your New Password"
                       className="form-control"
                       required
                     />
                   </div>
                   <div>
-                    <div className="mt-3 d-flex justify-content-center flex-column gap-15 align-items-center">
-                      {isLoading ? (
-                        <div className="spinner"></div>
-                      ) : (
-                        <button className="button border-0" type="submit">
-                          Submit
-                        </button>
-                      )}
-                      <Link to="/seller-login">Cancel</Link>
+                    <div className="mt-3 d-flex justify-content-center gap-15 align-items-center">
+                      <button className="button border-0" type="submit">
+                        Reset
+                      </button>
                     </div>
                   </div>
                 </form>
@@ -90,4 +82,4 @@ const AdminForgotPassword = () => {
   );
 };
 
-export default AdminForgotPassword;
+export default SellerResetPassword;

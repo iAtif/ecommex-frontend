@@ -6,7 +6,7 @@ import Bar from "../../Components/Bar";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-const AdminForgotPassword = () => {
+const SellerForgotPassword = () => {
   const [email, setemail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -15,7 +15,7 @@ const AdminForgotPassword = () => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        `http://localhost:5000/auth/admin/forgot-password`,
+        `http://localhost:5000/auth/wholeSeller/forgot-password`,
         { email }
       );
       if (res.data.success) {
@@ -90,4 +90,4 @@ const AdminForgotPassword = () => {
   );
 };
 
-export default AdminForgotPassword;
+export default SellerForgotPassword;
