@@ -8,9 +8,9 @@ const Contact = () => {
   return (
     <>
       <Meta title={"Contact Us"} />
-      <BreadCrumb title="Contact" />
+      <BreadCrumb items={[{ title: "Home", url: "/" }, { title: "Contact" }]} />
       <div className="contact-wrapper home-wrapper-2 py-3">
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <iframe

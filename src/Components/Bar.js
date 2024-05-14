@@ -9,10 +9,10 @@ const Bar = () => {
   return (
     <>
       <header className="header-upper py-1">
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row align-items-center">
             <div className="col-2">
-              <h2>
+              <h2 className="mb-0">
                 <Link className="text-white" to="/">
                   Ecommex
                 </Link>
@@ -20,11 +20,11 @@ const Bar = () => {
             </div>
             <div className="col-auto ms-auto">
               {isRegisterPage ? (
-                <Link to="/seller-login" className="button">
+                <Link to="/seller-login" className="button signup">
                   Login
                 </Link>
               ) : (
-                <></> // Consider adding a profile button or similar for logged-in users
+                <></>
               )}
             </div>
           </div>

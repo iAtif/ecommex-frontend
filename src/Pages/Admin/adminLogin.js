@@ -32,7 +32,7 @@ const AdminLogin = () => {
         // Wait for a short delay before navigating to ensure data is stored
         setTimeout(() => {
           navigate("/admin-dashboard");
-        }, 1000); // Adjust the delay as needed
+        }, 100);
       } else {
         console.log(res);
         toast.error(res.data);
@@ -52,10 +52,12 @@ const AdminLogin = () => {
     <>
       <Bar />
       <Meta title={"Admin Login"} />
-      <BreadCrumb title="Admin Login" />
+      <BreadCrumb
+        items={[{ title: "Home", url: "/" }, { title: "Admin Login" }]}
+      />
       <div
-        className="login-wrapper home-wrapper-2"
-        style={{ padding: "135px" }}
+        className="login-wrapper home-wrapper-2 d-flex justify-content-center align-items-center"
+        style={{ minHeight: "88vh" }}
       >
         <div className="container-xxl">
           <div className="row">

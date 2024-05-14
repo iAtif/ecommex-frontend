@@ -38,9 +38,11 @@ const ForgotPassword = () => {
   return (
     <>
       <Meta title={"Forgot Password"} />
-      <BreadCrumb title="Forgot Password" />
+      <BreadCrumb
+        items={[{ title: "Home", url: "/" }, { title: "Forgot Password" }]}
+      />
       <div className="login-wrapper home-wrapper-2 py-5">
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <div className="auth-card">

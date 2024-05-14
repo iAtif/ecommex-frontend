@@ -45,7 +45,7 @@ const SellerResetPassword = () => {
         className="login-wrapper home-wrapper-2"
         style={{ padding: "180px" }}
       >
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <div className="auth-card">

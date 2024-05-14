@@ -40,7 +40,13 @@ const AdminForgotPassword = () => {
     <>
       <Bar />
       <Meta title={"Forgot Password"} />
-      <BreadCrumb title="Forgot Password" />
+      <BreadCrumb
+        items={[
+          { title: "Home", url: "/" },
+          { title: "Admin Login", url: "/admin" },
+          { title: "Forgot Password" },
+        ]}
+      />
       <div
         className="login-wrapper home-wrapper-2"
         style={{ padding: "146px" }}

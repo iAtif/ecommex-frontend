@@ -1,16 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { BsWhatsapp, BsInstagram, BsFacebook } from "react-icons/bs";
+import newsletter from "../images/newsletter.png";
 
 const Footer = () => {
   return (
     <>
       <footer className="py-2">
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row align-items-center">
             <div className="col-6">
               <div className="footer-top-data d-flex gap-15 align-items-center">
-                <img src="images/newsletter.png" alt="newsletter" />
+                <img src={newsletter} alt="newsletter" />
                 <h4 className="mb-0 text-white">Sign Up for Newsletter</h4>
               </div>
             </div>
@@ -34,7 +35,7 @@ const Footer = () => {
         </div>
       </footer>
       <footer className="py-3">
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-4">
               <h4 className="text-white">Contact Us</h4>

@@ -50,9 +50,9 @@ const SignUp = () => {
   return (
     <>
       <Meta title={"SignUp"} />
-      <BreadCrumb title="SignUp" />
+      <BreadCrumb items={[{ title: "Home", url: "/" }, { title: "SignUp" }]} />
       <div className="login-wrapper home-wrapper-2 py-2">
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <div className="auth-card">
@@ -99,12 +99,12 @@ const SignUp = () => {
                   <div className="mt-1">
                     <input
                       type="tel"
-                      value={mobile}
-                      onChange={(e) => setmobile(e.target.value)}
+                      value={"+92-" + mobile}
+                      onChange={(e) => setmobile(e.target.value.slice(4))}
                       name="mobile"
                       placeholder="Enter Your Mobile No"
                       className="form-control"
-                      maxLength={13}
+                      maxLength={14}
                       required
                     />
                   </div>

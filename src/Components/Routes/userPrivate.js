@@ -1,24 +1,31 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../../Context/auth";
-import { Outlet } from "react-router-dom";
-import axios from "axios";
+import { useNavigate, Outlet } from "react-router-dom";
 import Spinner from "../Spinner";
+import toast from "react-hot-toast";
 
 export default function PrivateRoute() {
-  const [ok, setOk] = useState(false);
-  const [auth] = useAuth();
+  const [authenticated, setAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const authCheck = async () => {
-      const res = await axios.get(`http://localhost:5000/api/protected`);
-      if (res.data.ok) {
-        setOk(true);
-      } else {
-        setOk(false);
+    const checkAuthentication = () => {
+      // Check if user data is present in local storage
+      const user = JSON.parse(localStorage.getItem("auth"));
+      if (!user) {
+        // User data not found, navigate to login page after 5 seconds
+        setTimeout(() => {
+          toast.error("Please Login");
+          navigate("/login");
+        }, 1000);
+        return;
       }
-    };
-    if (auth?.user.token) authCheck();
-  }, [auth?.user.token]);
 
-  return ok ? <Outlet /> : <Spinner />;
+      // User data found, user is authenticated
+      setAuthenticated(true);
+    };
+
+    checkAuthentication();
+  }, [navigate]);
+
+  return authenticated ? <Outlet /> : <Spinner />;
 }

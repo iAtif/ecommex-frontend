@@ -1,12 +1,90 @@
-import React from "react";
-import { NavLink, Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
 import { useAuth } from "../Context/auth";
+import user from "../images/user.svg";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 const Header = () => {
   const [auth, setAuth] = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [totalNotifications, setTotalNotifications] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmedSearchQuery = searchQuery.trim();
+    if (trimmedSearchQuery !== "") {
+      navigate(`/store?search=${encodeURIComponent(trimmedSearchQuery)}`);
+    }
+  };
+
+  //Fetch Categories
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/categories");
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+  //Fetch Notifications
+  const token = JSON.parse(localStorage.getItem("auth"))?.token;
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        if (!token) {
+          setTotalNotifications(0);
+          return;
+        }
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+        const response = await axios.get("http://localhost:5000/notification", {
+          headers,
+        });
+        setTotalNotifications(response.data.total); // Set total notifications count
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+    fetchNotifications();
+  }, [token]);
+  //Fetch Subscriptions
+  const [subscriptions, setSubscriptions] = useState([]);
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      try {
+        if (!token) {
+          setSubscriptions([]);
+          return;
+        }
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+        const response = await axios.get("http://localhost:5000/subscription", {
+          headers,
+        });
+        setSubscriptions(response.data.subscriptions);
+      } catch (error) {
+        console.error("Error fetching subscriptions:", error);
+      }
+    };
+    fetchSubscriptions();
+  }, [token]);
+  // Check if the authenticated user has a subscription
+  const hasSubscription =
+    auth.user &&
+    subscriptions.some(
+      (subscription) => subscription.userId === auth.user.userId
+    );
 
   const handleLogout = () => {
     setAuth({
@@ -15,6 +93,7 @@ const Header = () => {
       token: "",
     });
     localStorage.removeItem("auth");
+    localStorage.removeItem("compareProducts");
     toast.success("Logout Successfully");
   };
 
@@ -26,7 +105,7 @@ const Header = () => {
     <>
       {!auth.user && (
         <header className="header-top-strip">
-          <div className="container-xxl">
+          <div className="container-fluid">
             <div className="row">
               <div className="col-12 text-end">
                 <Link to="/seller-register" className="text-white">
@@ -38,32 +117,40 @@ const Header = () => {
         </header>
       )}
       <header className="header-upper py-2">
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row align-items-center">
             <div className="col-2">
-              <h2>
-                <Link className="text-white" to="/">
+              <h2 className="mb-0">
+                <Link className="text-white mx-2" to="/">
                   Ecommex
                 </Link>
               </h2>
             </div>
-            <div className="col-5">
-              <div className="input-group">
-                <input
-                  type="text"
-                  id="searchInput"
-                  name="searchProduct"
-                  className="form-control py-2"
-                  placeholder="Search Product Here.."
-                  aria-label="Search Product Here.."
-                  aria-describedby="basic-addon2"
-                />
-                <span className="input-group-text" id="basic-addon2">
-                  <BsSearch className="fs-6" />
-                </span>
-              </div>
+            <div className="col-4">
+              <form onSubmit={handleSearchSubmit}>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    id="searchInput"
+                    name="searchProduct"
+                    className="form-control py-2"
+                    placeholder="Search Product Here.."
+                    aria-label="Search Product Here.."
+                    aria-describedby="basic-addon2"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    className="input-group-text"
+                    id="basic-addon2"
+                  >
+                    <BsSearch className="fs-6" />
+                  </button>
+                </div>
+              </form>
             </div>
-            <div className="col-5">
+            <div className="col-5 mx-5">
               <div className="header-upper-links d-flex align-items-center justify-content-between">
                 <div>
                   <Link
@@ -115,7 +202,7 @@ const Header = () => {
                       >
                         My Cart
                       </p>
-                      <span className="badge bg-white text-dark">1</span>
+                      <span className="badge bg-white text-dark">0</span>
                     </div>
                   </Link>
                 </div>
@@ -127,7 +214,7 @@ const Header = () => {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <img src="images/user.svg" alt="user" />
+                    <img src={user} alt="user" />
                     {auth.user ? (
                       <span className="d-inline-block">
                         Hi, {auth.user.firstName}
@@ -188,6 +275,23 @@ const Header = () => {
                     </>
                   )}
                 </div>
+                <div>
+                  <Link
+                    className="d-flex align-items-center text-white"
+                    to="/notifications"
+                  >
+                    <img
+                      src="/images/notification.svg"
+                      alt="notification"
+                      style={{ position: "relative" }}
+                    ></img>
+                    <div className="gap-10" style={{ position: "relative" }}>
+                      <span className="badge notification bg-white text-dark">
+                        {totalNotifications}
+                      </span>
+                    </div>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -201,7 +305,7 @@ const Header = () => {
           alignItems: "center",
         }}
       >
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <div className="menu-bottom d-flex align-items-center gap-30">
@@ -221,48 +325,43 @@ const Header = () => {
                       className="dropdown-menu"
                       aria-labelledby="dropdownMenuButton1"
                     >
-                      <li>
-                        <Link className="dropdown-item text-white" to="/">
-                          Action
-                        </Link>
-                      </li>
-                      <li>
-                        <Link className="dropdown-item text-white" to="/">
-                          Another action
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          className="dropdown-item text-white border-0"
-                          to="/"
-                        >
-                          Something else here
-                        </Link>
-                      </li>
+                      {categories.map((category) => (
+                        <li key={category._id}>
+                          <Link
+                            className="dropdown-item text-white"
+                            to={`/category/${category._id}`}
+                          >
+                            {category.name}
+                          </Link>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
                 <div className="menu-links">
                   <div className="d-flex align-items-center gap-20">
                     <NavLink
-                      exact
                       to="/"
                       className={isActiveLink("/") ? "active-link" : ""}
                     >
                       Home
                     </NavLink>
                     <NavLink
-                      to="/products"
-                      className={isActiveLink("/products") ? "active-link" : ""}
+                      to="/store"
+                      className={isActiveLink("/store") ? "active-link" : ""}
                     >
                       Our Store
                     </NavLink>
-                    <NavLink
-                      to="/trending"
-                      className={isActiveLink("/trending") ? "active-link" : ""}
-                    >
-                      Trending Products
-                    </NavLink>
+                    {auth.user && hasSubscription && (
+                      <NavLink
+                        to="/trending"
+                        className={
+                          isActiveLink("/trending") ? "active-link" : ""
+                        }
+                      >
+                        Trending Products
+                      </NavLink>
+                    )}
                     {/* <NavLink to="/blogs">Our Blogs</NavLink> */}
                     <NavLink
                       to="/contact"

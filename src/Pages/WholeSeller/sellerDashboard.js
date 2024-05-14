@@ -1,5 +1,5 @@
-import React from "react";
-import { BsArrowDownRight, BsArrowUpLeft } from "react-icons/bs";
+import React, { useState, useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 import {
   BarChart,
   Bar,
@@ -9,148 +9,203 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Table } from "antd";
+import axios from "axios";
 
 const columns = [
   {
     title: "SNo",
-    dataIndex: "key",
+    render: (text, record, index) => index + 1,
   },
   {
-    title: "Name",
-    dataIndex: "name",
+    title: "Order Number",
+    dataIndex: "orderNumber",
+    sorter: (a, b) => a.orderNumber - b.orderNumber,
+  },
+  {
+    title: "Customer",
+    dataIndex: "customer",
+    render: (customer) =>
+      `${customer.customerId.firstName} ${customer.customerId.lastName}`,
   },
   {
     title: "Product",
-    dataIndex: "product",
+    dataIndex: "products",
+    render: (products) =>
+      products.map((product) => product.productId.name).join(", "),
+  },
+  {
+    title: "Quantity",
+    dataIndex: "products",
+    render: (products) =>
+      products.reduce((total, product) => total + product.quantity, 0),
+  },
+  {
+    title: "Total Amount",
+    dataIndex: "totalAmount",
+    sorter: (a, b) => a.totalAmount - b.totalAmount,
   },
   {
     title: "Status",
     dataIndex: "status",
+    sorter: (a, b) => a.status.length - b.status.length,
   },
 ];
-const data1 = [];
-for (let i = 0; i < 46; i++) {
-  data1.push({
-    key: i,
-    name: `Edward King ${i}`,
-    product: 32,
-    status: `London, Park Lane no. ${i}`,
-  });
-}
 
 const SellerDashboard = () => {
-  const salesData = [
-    {
-      type: "Jan",
-      sales: 38,
-    },
-    {
-      type: "Feb",
-      sales: 52,
-    },
-    {
-      type: "Mar",
-      sales: 61,
-    },
-    {
-      type: "Apr",
-      sales: 145,
-    },
-    {
-      type: "May",
-      sales: 48,
-    },
-    {
-      type: "Jun",
-      sales: 38,
-    },
-    {
-      type: "July",
-      sales: 38,
-    },
-    {
-      type: "Aug",
-      sales: 38,
-    },
-    {
-      type: "Sept",
-      sales: 38,
-    },
-    {
-      type: "Oct",
-      sales: 38,
-    },
-    {
-      type: "Nov",
-      sales: 38,
-    },
-    {
-      type: "Dec",
-      sales: 38,
-    },
-  ];
+  const [showDailySales, setShowDailySales] = useState(true);
+  const [showWeeklySales, setShowWeeklySales] = useState(false);
+  const [salesData, setSalesData] = useState([]);
+  const [totalSales, setTotalSales] = useState(0);
+  const [orders, setOrders] = useState([]);
+
+  const fetchSalesData = async (dateFilter) => {
+    try {
+      const token = JSON.parse(localStorage.getItem("auth"))?.token;
+      const response = await axios.get(
+        `http://localhost:5000/whole-seller/orders?date_filter=${dateFilter}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        if (dateFilter === "today") {
+          setSalesData([
+            { Date: "Today", Sales: response.data.data.totalSale },
+          ]);
+          setTotalSales(response.data.data.totalSale);
+        } else if (
+          dateFilter === "weekly" &&
+          response.data.data.total_by_date
+        ) {
+          setSalesData(
+            response.data.data.total_by_date.map((item) => ({
+              Date: new Date(item.date).toLocaleDateString(),
+              Sales: item.total,
+            }))
+          );
+          setTotalSales(response.data.data.totalSale);
+        } else if (
+          dateFilter === "monthly" &&
+          response.data.data.total_by_date
+        ) {
+          setSalesData(
+            response.data.data.total_by_date.map((item) => ({
+              Date: new Date(item.date).toLocaleDateString(),
+              Sales: item.total,
+            }))
+          );
+          setTotalSales(response.data.data.totalSale);
+        } else {
+          setSalesData([]);
+        }
+        setOrders(response.data.data.orders);
+      } else {
+        throw new Error("Failed to fetch sales data");
+      }
+    } catch (error) {
+      console.error("Error fetching sales data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSalesData("today");
+  }, []);
+
+  const handleDailySalesClick = () => {
+    setShowDailySales(true);
+    setShowWeeklySales(false);
+    fetchSalesData("today");
+  };
+
+  const handleWeeklySalesClick = () => {
+    setShowDailySales(false);
+    setShowWeeklySales(true);
+    fetchSalesData("weekly");
+  };
+
+  const handleMonthlySalesClick = () => {
+    setShowDailySales(false);
+    setShowWeeklySales(false);
+    fetchSalesData("monthly");
+  };
+
   return (
     <div>
+      <Toaster />
       <h3 className="mb-4 title">WholeSeller Dashboard</h3>
-      <div className="d-flex justify-content-between align-items-center gap-3">
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
+      <div className="d-flex justify-content-center gap-5">
+        <div
+          className={`bg-white p-3 rounded-3 cursor ${
+            showDailySales ? "active" : ""
+          }`}
+          onClick={handleDailySalesClick}
+        >
           <div>
-            <p className="desc">Today's Sale</p>
-            <h4 className="mb-0 sub-title">$1100</h4>
-          </div>
-          <div className="d-flex flex-column align-items-end">
-            <h6 className="green">
-              <BsArrowUpLeft /> 32%
-            </h6>
-            <p className="mb-0  desc">Compared To January 2024</p>
+            <p className="desc title mb-0">Today's Sale</p>
           </div>
         </div>
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
+        <div
+          className={`bg-white p-3 rounded-3 cursor ${
+            !showDailySales && showWeeklySales ? "active" : ""
+          }`}
+          onClick={handleWeeklySalesClick}
+        >
           <div>
-            <p className="desc">Weekly Sale</p>
-            <h4 className="mb-0 sub-title">$1100</h4>
-          </div>
-          <div className="d-flex flex-column align-items-end">
-            <h6 className="red">
-              <BsArrowDownRight /> 32%
-            </h6>
-            <p className="mb-0  desc">Compared To December 2023</p>
+            <p className="desc title mb-0">Weekly Sale</p>
           </div>
         </div>
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
+        <div
+          className={`bg-white p-3 rounded-3 cursor ${
+            !showDailySales && !showWeeklySales ? "active" : ""
+          }`}
+          onClick={handleMonthlySalesClick}
+        >
           <div>
-            <p className="desc">Monthly Sale</p>
-            <h4 className="mb-0 sub-title">$1100</h4>
+            <p className="desc title mb-0">Monthly Sale</p>
           </div>
-          <div className="d-flex flex-column align-items-end">
-            <h6 className="red">
-              <BsArrowDownRight /> 32%
-            </h6>
-            <p className="mb-0 desc">Compared To November 2023</p>
+        </div>
+      </div>
+      <div className="d-flex justify-content-center mt-3">
+        <div className="bg-white p-3 rounded-3" onClick={handleDailySalesClick}>
+          <div className="text-center">
+            <p className="total-sale title mb-0">Total Sales</p>
+            <p className="mb-0">Rs. {totalSales}</p>
           </div>
         </div>
       </div>
       <div className="mt-4">
         <h3 className="mb-3 title">Income Statics</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={salesData}>
-            <XAxis dataKey="type" />
-            <YAxis dataKey="sales" />
-            <Tooltip />
-            <Bar
-              dataKey="sales"
-              fill="#ffd333"
-              label={{ position: "middle", fill: "#000000" }}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-        <h6 className="text-center">Yearly Sale</h6>
-      </div>
-      <div className="mt-2">
-        <h3 className="mb-3 title">Recent Orders</h3>
-        <div>
-          <Table columns={columns} dataSource={data1} />
+        <div className="d-flex justify-content-center">
+          <ResponsiveContainer width="80%" height={400}>
+            <BarChart data={salesData}>
+              <XAxis dataKey="Date" />
+              <YAxis />
+              <Tooltip />
+              <Bar
+                dataKey="Sales"
+                fill="#ffd333"
+                label={{ position: "middle", fill: "#000000" }}
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
+        <h6 className="text-center">
+          {showDailySales
+            ? "Today"
+            : `${showWeeklySales ? "Weekly" : "Monthly"}`}{" "}
+          Sales Data
+        </h6>
+      </div>
+      <h3 className="mt-4 mb-4 title">Orders</h3>
+      <div>
+        <Table
+          columns={columns}
+          dataSource={orders}
+          tableLayout="auto"
+          rowKey="_id"
+        />
       </div>
     </div>
   );

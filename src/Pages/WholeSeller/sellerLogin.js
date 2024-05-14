@@ -54,12 +54,14 @@ const SellerLogin = () => {
     <>
       <Bar />
       <Meta title={"Seller Login"} />
-      <BreadCrumb title="Seller Login" />
+      <BreadCrumb
+        items={[{ title: "Home", url: "/" }, { title: "Seller Login" }]}
+      />
       <div
-        className="login-wrapper home-wrapper-2"
-        style={{ padding: "135px" }}
+        className="login-wrapper home-wrapper-2 d-flex justify-content-center align-items-center"
+        style={{ minHeight: "88vh" }}
       >
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <div className="auth-card">

@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
 
 const Spinner = () => {
   const [count, setCount] = useState(3);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCount((preValue) => --preValue);
+      setCount((prevCount) => prevCount - 1);
     }, 1000);
-    if (count === 0) {
-      clearInterval(interval);
-      navigate("/login");
-      toast.error("Please Authenticate");
-    }
-    return () => clearInterval(interval);
-  }, [count, navigate]);
+
+    // Cleanup function to clear interval when count reaches 0
+    return () => {
+      if (count === 0) {
+        clearInterval(interval);
+      }
+    };
+  }, [count]);
+
   return (
     <div
       className="d-flex justify-content-center align-items-center"
