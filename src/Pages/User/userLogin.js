@@ -30,7 +30,6 @@ const Login = () => {
         });
         localStorage.setItem("auth", JSON.stringify(res.data));
         navigate(location.state || "/");
-        console.log(auth);
       } else {
         console.log(res);
         toast.error(res.data.message);
@@ -49,9 +48,9 @@ const Login = () => {
   return (
     <>
       <Meta title={"Login"} />
-      <BreadCrumb title="Login" />
+      <BreadCrumb items={[{ title: "Home", url: "/" }, { title: "Login" }]} />
       <div className="login-wrapper home-wrapper-2 py-2">
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <div className="auth-card">

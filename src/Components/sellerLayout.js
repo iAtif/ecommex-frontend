@@ -3,7 +3,6 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { BsChat, BsDatabase } from "react-icons/bs";
 import { TbClipboardList } from "react-icons/tb";
-import { IoIosNotifications } from "react-icons/io";
 import { Layout, Menu, theme } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { Outlet } from "react-router-dom";
@@ -28,7 +27,9 @@ const SellerLayout = () => {
         token: "",
       });
       localStorage.removeItem("auth");
-      toast.success("Logout Successfully");
+      setTimeout(() => {
+        toast.success("Logout Successfully");
+      }, 100);
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Failed to logout");
@@ -56,7 +57,7 @@ const SellerLayout = () => {
           }}
           items={[
             {
-              key: "",
+              key: "/seller-dashboard",
               icon: <AiOutlineDashboard />,
               label: "Dashboard",
             },
@@ -67,7 +68,7 @@ const SellerLayout = () => {
               children: [
                 {
                   key: "add-product",
-                  label: "Products",
+                  label: "Add Product",
                 },
                 {
                   key: "products-list",
@@ -76,12 +77,12 @@ const SellerLayout = () => {
               ],
             },
             {
-              key: "orders",
+              key: "seller-orders",
               icon: <TbClipboardList />,
               label: "Orders",
             },
             {
-              key: "Chat",
+              key: "seller-chat",
               icon: <BsChat />,
               label: "Chat",
             },
@@ -112,15 +113,8 @@ const SellerLayout = () => {
           >
             {/* Outlet for nested routes */}
           </Content>
-          <div className="d-flex gap-4 align-items-center">
-            <div className="position-relative">
-              <IoIosNotifications className="fs-4" />
-              <span className="badge bg-warning rounded-circle p-1 position-absolute">
-                3
-              </span>
-            </div>
-
-            <div className="d-flex gap-3 align-items-center dropdown">
+          <div className="d-flex gap-5 align-items-center">
+            <div className="d-flex gap-5 align-items-center dropdown ">
               {/* <div>
                 <img width={32} height={32} src="" alt="user" />
               </div> */}
@@ -137,13 +131,12 @@ const SellerLayout = () => {
               </div>
               <div className="dropdown-menu" aria-labelledby="dropdownMenuLink">
                 <li>
-                  <Link
+                  <p
                     className="dropdown-item py-1 mb-1"
                     style={{ height: "auto", lineHeight: "20px" }}
-                    to="/"
                   >
-                    View Profile
-                  </Link>
+                    {auth.seller?.businessName}
+                  </p>
                 </li>
                 <li>
                   <Link

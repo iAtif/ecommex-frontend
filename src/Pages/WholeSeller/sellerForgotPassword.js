@@ -40,12 +40,18 @@ const SellerForgotPassword = () => {
     <>
       <Bar />
       <Meta title={"Forgot Password"} />
-      <BreadCrumb title="Forgot Password" />
+      <BreadCrumb
+        items={[
+          { title: "Home", url: "/" },
+          { title: "Seller Login", url: "/seller-login" },
+          { title: "Forgot Password" },
+        ]}
+      />
       <div
         className="login-wrapper home-wrapper-2"
         style={{ padding: "146px" }}
       >
-        <div className="container-xxl">
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <div className="auth-card">

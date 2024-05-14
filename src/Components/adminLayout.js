@@ -9,8 +9,7 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Layout, Menu, theme } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { Outlet } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
-import toast from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import { useAuth } from "../Context/auth";
 const { Header, Sider, Content } = Layout;
 
@@ -30,7 +29,9 @@ const AdminLayout = () => {
       token: "",
     });
     localStorage.removeItem("auth");
-    toast.success("Logout Successfully");
+    setTimeout(() => {
+      toast.success("Logout Successfully");
+    }, 100);
   };
   return (
     <Layout>
@@ -53,7 +54,7 @@ const AdminLayout = () => {
           }}
           items={[
             {
-              key: "",
+              key: "/admin-dashboard",
               icon: <AiOutlineDashboard />,
               label: "Dashboard",
             },
@@ -63,12 +64,12 @@ const AdminLayout = () => {
               label: "Users",
               children: [
                 {
-                  key: "all-sellers",
+                  key: "sellers",
                   icon: <HiOutlineUserGroup />,
                   label: "ReSellers",
                 },
                 {
-                  key: "wholeSeller",
+                  key: "wholesellers",
                   icon: <HiOutlineUserGroup />,
                   label: "WholeSellers",
                 },
@@ -80,26 +81,46 @@ const AdminLayout = () => {
               label: "Catalog",
               children: [
                 {
-                  key: "add-category",
+                  key: "categories",
                   icon: <BiCategory />,
-                  label: "Add Category",
+                  label: "Categories",
                 },
                 {
-                  key: "category-list",
-                  icon: <BiCategory />,
-                  label: "Category List",
-                },
-                {
-                  key: "product-List",
+                  key: "products",
                   icon: <FaProductHunt />,
-                  label: "Products List",
+                  label: "Products",
                 },
               ],
             },
             {
-              key: "order",
+              key: "Subscription",
+              icon: <BsDatabase />,
+              label: "Subscription",
+              children: [
+                {
+                  key: "add-subscription",
+                  label: "Create Subscription",
+                },
+                {
+                  key: "subscription",
+                  label: "Subscriptions Plan",
+                },
+              ],
+            },
+            {
+              key: "orders",
               icon: <TbClipboardList />,
               label: "Orders",
+              children: [
+                {
+                  key: "order-status",
+                  label: "Change Order Status",
+                },
+                {
+                  key: "delivered-orders",
+                  label: "Delivered Orders",
+                },
+              ],
             },
           ]}
         />

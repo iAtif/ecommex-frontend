@@ -35,7 +35,9 @@ const SellerSignUp = () => {
       // Check if registration was successful
       if (res.data.success) {
         toast.success(res.data.message);
-        navigate("/seller-login");
+        setTimeout(() => {
+          navigate("/seller-login");
+        }, 100);
       } else {
         toast.error(res.data.message);
       }
@@ -53,9 +55,14 @@ const SellerSignUp = () => {
     <>
       <Bar />
       <Meta title={"Become a Seller"} />
-      <BreadCrumb title="Become a Seller" />
-      <div className="login-wrapper home-wrapper-2 py-2">
-        <div className="container-xxl">
+      <BreadCrumb
+        items={[{ title: "Home", url: "/" }, { title: "Become a Seller" }]}
+      />
+      <div
+        className="login-wrapper home-wrapper-2 py-2"
+        style={{ minHeight: "88vh" }}
+      >
+        <div className="container-fluid">
           <div className="row">
             <div className="col-12">
               <div className="auth-card">
@@ -113,11 +120,12 @@ const SellerSignUp = () => {
                   <div className="mt-1">
                     <input
                       type="tel"
-                      value={"+92" + mobile}
-                      onChange={(e) => setmobile(e.target.value.slice(3))}
+                      value={"+92-" + mobile}
+                      onChange={(e) => setmobile(e.target.value.slice(4))}
                       name="mobile"
                       placeholder="Enter Your Mobile No"
                       className="form-control"
+                      maxLength={14}
                       required
                     />
                   </div>

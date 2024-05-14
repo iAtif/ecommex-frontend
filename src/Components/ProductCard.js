@@ -1,96 +1,211 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import ReactStars from "react-rating-stars-component";
-const ProductCard = (props) => {
-  const { grid } = props;
+import compare from "../images/prodcompare.svg";
+import wish from "../images/wish.svg";
+import view from "../images/view.svg";
+import cart from "../images/add-cart.svg";
+import toast from "react-hot-toast";
+import axios from "axios";
+
+const ProductCard = ({ products, grid }) => {
   let location = useLocation();
+
+  // Handle adding a product to favorites
+  const handleAddToFavorites = async (event, productId) => {
+    event.preventDefault();
+    try {
+      const token = JSON.parse(localStorage.getItem("auth"))?.token;
+      if (!token) {
+        toast.error("Please login first");
+        return;
+      }
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+      const response = await axios.post(
+        "http://localhost:5000/favorite",
+        { productId },
+        { headers }
+      );
+      if (response.data.success) {
+        toast.success("Product added to Wishlist");
+      }
+    } catch (error) {
+      console.error("Error adding product to favorites:", error);
+      toast.error("Failed to add product to Favorites");
+    }
+  };
+  // Handle compare icon click
+  const handleCompareClick = (event, product) => {
+    event.preventDefault();
+    const token = JSON.parse(localStorage.getItem("auth"))?.token;
+    if (!token) {
+      toast.error("Please login first");
+      return;
+    }
+    const storedProducts =
+      JSON.parse(localStorage.getItem("compareProducts")) || [];
+    if (storedProducts.length >= 4) {
+      toast.error("You can compare up to 4 products");
+      return;
+    }
+    const updatedProducts = [...storedProducts, product];
+    localStorage.setItem("compareProducts", JSON.stringify(updatedProducts));
+    toast.success("Product Added to Compare List");
+  };
+
+  const handleAddToCart = async (event, productId) => {
+    event.preventDefault();
+    try {
+      const token = JSON.parse(localStorage.getItem("auth"))?.token;
+      if (!token) {
+        toast.error("Please login first");
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const userId = JSON.parse(localStorage.getItem("auth"))?.user.userId;
+
+      const response = await axios.post(
+        "http://localhost:5000/cart/add",
+        { productId, userId },
+        { headers }
+      );
+
+      if (response.data.success) {
+        toast.success("Product added to Cart");
+      }
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      toast.error("Failed to add product to Cart");
+    }
+  };
 
   return (
     <>
-      <div
-        className={` ${
-          location.pathname === "/store" ? `gr-${grid}` : "col-3"
-        } `}
-      >
-        <Link to=":id" className="product-card position-relative">
-          <div className="wishlist-icon position-absolute">
-            <img src="images/wish.svg" alt="wishlist" />
+      {Array.isArray(products) && products.length > 0 ? (
+        products.map((product) => (
+          <div
+            key={product._id}
+            className={` ${
+              location.pathname === "/store" ? `gr-${grid}` : "col-3"
+            } `}
+          >
+            <Link
+              to={`/store/${product._id}`}
+              className="product-card position-relative"
+            >
+              <div className="product-image">
+                {product.images.map((image, index) => (
+                  <img
+                    key={index}
+                    src={`${image}`}
+                    alt={`product ${index + 1}`}
+                  />
+                ))}
+              </div>
+              <div className="product-details">
+                <h5
+                  className="product-title mb-0"
+                  style={{
+                    maxWidth: "100%",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {product.name}
+                </h5>
+                <p
+                  className={`description ${
+                    grid === 12 ? "d-block" : "d-none"
+                  }`}
+                >
+                  {product.description}
+                </p>
+                {product.discountInPercent === 0 ? (
+                  <>
+                    <p className="price m-0">
+                      {product.price.currency} {product.payableAmount}
+                    </p>
+                    <p className="minOrder m-0">
+                      Min. order: {product.minimumOrder} pieces
+                    </p>
+                    <div className="d-flex align-items-center">
+                      <p className="discount m-0 text-white">
+                        {product.price.currency} {product.price.amount}
+                      </p>
+                      <p className="discount-percent m-0 text-white">
+                        -{product.discountInPercent}%
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="price m-0">
+                      {product.price.currency} {product.payableAmount}
+                    </p>
+                    <div className="d-flex align-items-center">
+                      <p className="discount m-0">
+                        {product.price.currency} {product.price.amount}
+                      </p>
+                      <p className="discount-percent m-0">
+                        -{product.discountInPercent}%
+                      </p>
+                    </div>
+                    <p className="minOrder m-0">
+                      Min. order: {product.minimumOrder} pieces
+                    </p>
+                  </>
+                )}
+                <ReactStars
+                  count={5}
+                  size={20}
+                  value={product.averageRating}
+                  edit={false}
+                  activeColor="#ffd700"
+                />
+                <h6 className="store mb-0">{product.createdBy.businessName}</h6>
+              </div>
+              <div className="action-bar position-absolute">
+                <div className="d-flex flex-column gap-15">
+                  <div
+                    className="icon-container"
+                    onClick={(event) =>
+                      handleAddToFavorites(event, product._id)
+                    }
+                  >
+                    <img src={wish} alt="wishlist" />
+                  </div>
+                  <div
+                    className="icon-container"
+                    onClick={(event) => handleCompareClick(event, product)}
+                  >
+                    <img src={compare} alt="compare" />
+                  </div>
+                  <div
+                    className="icon-container"
+                    onClick={(event) => handleAddToCart(event, product._id)}
+                  >
+                    <img src={cart} alt="addcart" />
+                  </div>
+                  <div className="icon-container">
+                    <img src={view} alt="view" />
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
-          <div className="product-image">
-            <img src="images/watch.jpg" alt="product" />
-            <img src="images/download.jpg" alt="product" />
-          </div>
-          <div className="product-details">
-            <h6 className="brand">Havels</h6>
-            <h5 className="product-title">Lorum Ipsum Watches</h5>
-            <ReactStars
-              count={5}
-              size={24}
-              value={4}
-              edit={false}
-              activeColor="#ffd700"
-            />
-            <p className={`description ${grid === 12 ? "d-block" : "d-none"}`}>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry. Lorem Ipsum has been the industry's standard dummy text
-              ever since the 1500s, when an unknown printer took a galley of
-              type and scrambled it to make a type specimen book. It has
-              survived not only five centuries, but also the leap into
-              electronic typesetting, remaining essentially unchanged.
-            </p>
-            <p className="price">PKR10,000</p>
-          </div>
-          <div className="action-bar position-absolute">
-            <div className="d-flex flex-column gap-15">
-              <img src="images/prodcompare.svg" alt="compare" />
-              <img src="images/view.svg" alt="addcart" />
-              <img src="images/add-cart.svg" alt="addcart" />
-            </div>
-          </div>
-        </Link>
-      </div>
-      <div
-        className={` ${
-          location.pathname === "/store" ? `gr-${grid}` : "col-3"
-        } `}
-      >
-        <Link className="product-card position-relative">
-          <div className="wishlist-icon position-absolute">
-            <img src="images/wish.svg" alt="wishlist" />
-          </div>
-          <div className="product-image">
-            <img src="images/watch.jpg" alt="product" />
-            <img src="images/download.jpg" alt="product" />
-          </div>
-          <div className="product-details">
-            <h6 className="brand">Havels</h6>
-            <h5 className="product-title">Lorum Ipsum Watches</h5>
-            <ReactStars
-              count={5}
-              size={24}
-              value={4}
-              edit={false}
-              activeColor="#ffd700"
-            />
-            <p className={`description ${grid === 12 ? "d-block" : "d-none"}`}>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry. Lorem Ipsum has been the industry's standard dummy text
-              ever since the 1500s, when an unknown printer took a galley of
-              type and scrambled it to make a type specimen book. It has
-              survived not only five centuries, but also the leap into
-              electronic typesetting, remaining essentially unchanged.
-            </p>
-            <p className="price">PKR10,000</p>
-          </div>
-          <div className="action-bar position-absolute">
-            <div className="d-flex flex-column gap-15">
-              <img src="images/prodcompare.svg" alt="compare" />
-              <img src="images/view.svg" alt="addcart" />
-              <img src="images/add-cart.svg" alt="addcart" />
-            </div>
-          </div>
-        </Link>
-      </div>
+        ))
+      ) : (
+        <div>
+          <h1 className="empty-cart">NO PRODUCTS FOUND</h1>
+        </div>
+      )}
     </>
   );
 };

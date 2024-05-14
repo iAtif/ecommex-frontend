@@ -1,98 +1,179 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import Marquee from "react-fast-marquee";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Meta from "../Components/Meta";
-/* import BlogCard from "../Components/BlogCard";*/
 import ProductCard from "../Components/ProductCard";
-import SpecialProduct from "../Components/SpecialProduct";
-/* import { useAuth } from "../Context/auth"; */
+// import SpecialProduct from "../Components/SpecialProduct";
+import Spinner from "../Components/Spinner";
+import axios from "axios";
 
 const Home = () => {
-  /* const [auth, setAuth] = useAuth(); */
+  const [plans, setPlans] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [randomProducts, setRandomProducts] = useState([]);
+  const token = JSON.parse(localStorage.getItem("auth"))?.token;
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleClick = (plan) => {
+    // Store the specific plan information in browser history and navigate to checkout page
+    navigate("/subscription-payment", {
+      state: { plan },
+    });
+  };
+
+  useEffect(() => {
+    const fetchSubscriptionPlans = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/subscription-plan"
+        );
+        if (response.data.success) {
+          setPlans(response.data.subscriptions);
+        } else {
+          throw new Error("Failed to fetch subscription plans");
+        }
+      } catch (error) {
+        console.error("Error fetching subscription plans:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscriptionPlans();
+  }, []);
+
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      try {
+        if (!token) {
+          setSubscriptions([]);
+          return;
+        }
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+        const response = await axios.get("http://localhost:5000/subscription", {
+          headers,
+        });
+        setSubscriptions(response.data.subscriptions);
+      } catch (error) {
+        console.error("Error fetching subscriptions:", error);
+      }
+    };
+    fetchSubscriptions();
+  }, [token]);
+
+  // Check if the authenticated user has a subscription
+  const auth = JSON.parse(localStorage.getItem("auth")) || {};
+  const hasSubscription =
+    auth.user &&
+    subscriptions.some(
+      (subscription) => subscription.userId === auth.user.userId
+    );
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get("http://localhost:5000/products");
+        setProducts(response.data.products);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    if (products.length > 0) {
+      // Generate random indices
+      const randomIndices = [];
+      while (randomIndices.length < 8) {
+        const randomIndex = Math.floor(Math.random() * products.length);
+        if (!randomIndices.includes(randomIndex)) {
+          randomIndices.push(randomIndex);
+        }
+      }
+
+      // Select random products
+      const randomProducts = randomIndices.map((index) => products[index]);
+      setRandomProducts(randomProducts);
+    }
+  }, [products]);
+
+  if (loading) {
+    return <Spinner />;
+  }
+
   return (
     <>
       <Meta title={"Ecommex"} />
-      <section className="home wrapper-1 py-5">
-        <div className="container-xxl">
+      <section className="home wrapper-1 py-4">
+        <div className="container-fluid">
           <div className="row">
-            <div className="col-6">
-              <div className="main-banner position-relative p-3">
-                <img
-                  src="images/banner.jpg"
-                  className="img-fluid rounded-3"
-                  alt="main banner"
-                />
-                <div className="main-banner-content position-absolute">
-                  {/* <pre>{JSON.stringify(auth, null, 4)}</pre> */}
-                  <h4>Empowering Startups</h4>
-                  <h5>Ecommex</h5>
-                  <p>
-                    Where Resellers <br /> meets Wholesalers.
-                  </p>
-                  <Link className="button" to="/products">
-                    EXPLORE
-                  </Link>
+            {hasSubscription ? (
+              <div className="col-12 p-0">
+                <div className="position-relative">
+                  <img
+                    src="images/subscribed.png"
+                    className="img-fluid rounded-3 w-100"
+                    alt="main-banner"
+                  />
                 </div>
               </div>
-            </div>
-            <div className="col-6">
-              <div className="d-flex flex-wrap gap-10 justify-content-between align-items-center p-3">
-                <div className="small-banner position-relative">
-                  <img
-                    src="images/catbanner-01.jpg"
-                    className="img-fluid rounded-3"
-                    alt="small banner"
-                  />
-                  <div className="small-banner-content position-absolute">
-                    <h4>Best Sale</h4>
-                    <h5>Macbook Pro</h5>
-                    <p>
-                      From Rs2,99,999 <br /> or Rs42,000/mo.
-                    </p>
+            ) : (
+              <>
+                <div className="col-6">
+                  <div className="main-banner position-relative">
+                    <img
+                      src="images/banner-1.jpg"
+                      className="img-fluid rounded-3"
+                      alt="small-banner"
+                    />
+                    <div className="main-banner-content position-absolute mx-3">
+                      <h4>Empowering Startups</h4>
+                      <h5>Ecommex</h5>
+                      <p>
+                        Where Resellers <br /> meets Wholesalers.
+                      </p>
+                      <Link className="button" to="/store">
+                        EXPLORE
+                      </Link>
+                    </div>
                   </div>
                 </div>
-                <div className="small-banner position-relative">
-                  <img
-                    src="images/catbanner-02.jpg"
-                    className="img-fluid rounded-3"
-                    alt="small banner"
-                  />
-                  <div className="small-banner-content position-absolute">
-                    <h4>New Arrival</h4>
-                    <h5>Apple Watch</h5>
-                    <p>
-                      From Rs999 <br /> or Rs42/mo.
-                    </p>
+                <div className="col-6">
+                  <div className="main-banner position-relative">
+                    <img
+                      src="images/banner-2.png"
+                      className="img-fluid rounded-3"
+                      alt="subscription-banner"
+                    />
+                    <div className="main-banner-content position-absolute mx-3">
+                      <h4>Boost Success</h4>
+                      <h5>
+                        Ecommex <br /> Subscription
+                      </h5>
+                      <p>Save Time & Money</p>
+                      {plans.map((plan, index) => (
+                        <button
+                          key={index}
+                          className="button"
+                          onClick={() => handleClick(plan)} // Pass the plan to handleClick
+                        >
+                          Subscribe Now
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="small-banner position-relative">
-                  <img
-                    src="images/catbanner-03.jpg"
-                    className="img-fluid rounded-3"
-                    alt="small banner"
-                  />
-                  <div className="small-banner-content position-absolute">
-                    <h5>iPad Pro</h5>
-                    <p>
-                      From Rs999 <br /> or Rs4200/mo.
-                    </p>
-                  </div>
-                </div>
-                <div className="small-banner position-relative">
-                  <img
-                    src="images/catbanner-04.jpg"
-                    className="img-fluid rounded-3"
-                    alt="small banner"
-                  />
-                  <div className="small-banner-content position-absolute">
-                    <h5>Airpods Max</h5>
-                    <p>
-                      From Rs9,999 <br /> or Rs4200/mo.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -141,54 +222,17 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section className="marque-wrapper py-5">
+      <section className="justforyou-wrapper py-5 home-wrapper-2">
         <div className="container-xxl">
           <div className="row">
             <div className="col-12">
-              <div className="marquee-inner-wrapper bg-white card-wrapper">
-                <Marquee className="d-flex">
-                  <div className="mx-4 w-25">
-                    <img src="images/brand-01.png" alt="brand" />
-                  </div>
-                  <div className="mx-4 w-25">
-                    <img src="images/brand-02.png" alt="brand" />
-                  </div>
-                  <div className="mx-4 w-25">
-                    <img src="images/brand-03.png" alt="brand" />
-                  </div>
-                  <div className="mx-4 w-25">
-                    <img src="images/brand-04.png" alt="brand" />
-                  </div>
-                  <div>
-                    <img src="images/brand-05.png" alt="brand" />
-                  </div>
-                  <div className="mx-4 w-25">
-                    <img src="images/brand-06.png" alt="brand" />
-                  </div>
-                  <div className="mx-4 w-25">
-                    <img src="images/brand-07.png" alt="brand" />
-                  </div>
-                  <div className="mx-4 w-25">
-                    <img src="images/brand-08.png" alt="brand" />
-                  </div>
-                </Marquee>
-              </div>
+              <h3 className="section-heading mb-3">Just For You</h3>
             </div>
+            <ProductCard products={randomProducts} grid={3} />
           </div>
         </div>
       </section>
-      <section className="featured-wrapper py-3 home-wrapper-2">
-        <div className="container-xxl">
-          <div className="row">
-            <div className="col-12">
-              <h3 className="section-heading">Featured Products</h3>
-            </div>
-            <ProductCard />
-            <ProductCard />
-          </div>
-        </div>
-      </section>
-      <section className="special-wrapper py-3 home-wrapper-2">
+      {/* <section className="special-wrapper py-3 home-wrapper-2">
         <div className="container-xxl">
           <div className="row">
             <div className="col-12">
@@ -198,29 +242,6 @@ const Home = () => {
           <div className="row">
             <SpecialProduct />
             <SpecialProduct />
-          </div>
-        </div>
-      </section>
-      <section className="popular-wrapper py-3 home-wrapper-2">
-        <div className="container-xxl">
-          <div className="row">
-            <div className="col-12">
-              <h3 className="section-heading">Our Popular Products</h3>
-            </div>
-          </div>
-          <div className="row">
-            <ProductCard />
-            <ProductCard />
-          </div>
-        </div>
-      </section>
-      {/* <section className="blog-wrapper py-3 home-wrapper-2">
-        <div className="container-xxl">
-          <div className="row">
-            <div className="col-12">
-              <h3 className="section-heading">Our Latest Blogs</h3>
-            </div>
-            <BlogCard />
           </div>
         </div>
       </section> */}

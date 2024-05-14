@@ -1,14 +1,8 @@
-import React from "react";
-import { BsArrowDownRight, BsArrowUpLeft } from "react-icons/bs";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import React, { useEffect, useState } from "react";
+import { Toaster } from "react-hot-toast";
+import Spinner from "../../Components/Spinner";
 import { Table } from "antd";
+import axios from "axios";
 
 const columns = [
   {
@@ -16,141 +10,100 @@ const columns = [
     dataIndex: "key",
   },
   {
-    title: "Name",
-    dataIndex: "name",
+    title: "Order Number",
+    dataIndex: "orderNumber",
+  },
+  {
+    title: "Customer Name",
+    dataIndex: "customerName",
   },
   {
     title: "Product",
-    dataIndex: "product",
+    dataIndex: "productName",
+  },
+  {
+    title: "Total Amount",
+    dataIndex: "totalAmount",
+    sorter: (a, b) => a.totalAmount - b.totalAmount,
   },
   {
     title: "Status",
     dataIndex: "status",
   },
 ];
-const data1 = [];
-for (let i = 0; i < 46; i++) {
-  data1.push({
-    key: i,
-    name: `Edward King ${i}`,
-    product: 32,
-    status: `London, Park Lane no. ${i}`,
-  });
-}
 
 const AdminDashboard = () => {
-  const salesData = [
-    {
-      type: "Jan",
-      sales: 38,
-    },
-    {
-      type: "Feb",
-      sales: 52,
-    },
-    {
-      type: "Mar",
-      sales: 61,
-    },
-    {
-      type: "Apr",
-      sales: 145,
-    },
-    {
-      type: "May",
-      sales: 48,
-    },
-    {
-      type: "Jun",
-      sales: 38,
-    },
-    {
-      type: "July",
-      sales: 38,
-    },
-    {
-      type: "Aug",
-      sales: 38,
-    },
-    {
-      type: "Sept",
-      sales: 38,
-    },
-    {
-      type: "Oct",
-      sales: 38,
-    },
-    {
-      type: "Nov",
-      sales: 38,
-    },
-    {
-      type: "Dec",
-      sales: 38,
-    },
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const token = JSON.parse(localStorage.getItem("auth"))?.token;
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const response = await axios.get("http://localhost:5000/orders", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        // Filter orders with Pending status
+        const filteredOrders = response.data.Orders.filter(
+          (order) => order.status === "Pending"
+        );
+
+        // Sort orders by createdAt date in descending order to show new orders first
+        const sortedOrders = filteredOrders.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+        setOrders(sortedOrders);
+      } else {
+        throw new Error("Failed to fetch orders list");
+      }
+    } catch (error) {
+      console.error("Error fetching orders list:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  if (loading) {
+    return <Spinner />;
+  }
+
+  const all_orders = Array.isArray(orders)
+    ? orders.map((order, index) => ({
+        key: index + 1,
+        customerName:
+          order.customer?.customerId?.firstName +
+          " " +
+          order.customer?.customerId?.lastName,
+        productName: order.products
+          ? order.products.map((product) => product.productId.name).join(", ")
+          : "No Products",
+        orderNumber: order.orderNumber,
+        totalAmount: `Rs. ${order.totalAmount}`,
+        status: order.status,
+      }))
+    : [];
 
   return (
     <div>
+      <Toaster />
       <h3 className="mb-4 title">Admin Dashboard</h3>
-      <div className="d-flex justify-content-between align-items-center gap-3">
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
-          <div>
-            <p className="desc">Today's Sale</p>
-            <h4 className="mb-0 sub-title">$1100</h4>
-          </div>
-          <div className="d-flex flex-column align-items-end">
-            <h6 className="green">
-              <BsArrowUpLeft /> 32%
-            </h6>
-            <p className="mb-0  desc">Compared To January 2024</p>
-          </div>
-        </div>
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
-          <div>
-            <p className="desc">Weekly Sale</p>
-            <h4 className="mb-0 sub-title">$1100</h4>
-          </div>
-          <div className="d-flex flex-column align-items-end">
-            <h6 className="red">
-              <BsArrowDownRight /> 32%
-            </h6>
-            <p className="mb-0  desc">Compared To December 2023</p>
-          </div>
-        </div>
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
-          <div>
-            <p className="desc">Monthly Sale</p>
-            <h4 className="mb-0 sub-title">$1100</h4>
-          </div>
-          <div className="d-flex flex-column align-items-end">
-            <h6 className="red">
-              <BsArrowDownRight /> 32%
-            </h6>
-            <p className="mb-0 desc">Compared To November 2023</p>
-          </div>
-        </div>
-      </div>
-      <div className="mt-4">
-        <h3 className="mb-3 title">Income Statics</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={salesData}>
-            <XAxis dataKey="type" />
-            <YAxis dataKey="sales" />
-            <Tooltip />
-            <Bar
-              dataKey="sales"
-              fill="#ffd333"
-              label={{ position: "middle", fill: "#000000" }}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-        <h6 className="text-center">Yearly Sale</h6>
-      </div>
-      <div className="mt-2">
+      <div className="mt-5">
         <h3 className="mb-3 title">Recent Orders</h3>
         <div>
-          <Table columns={columns} dataSource={data1} />
+          <Table columns={columns} dataSource={all_orders} />
         </div>
       </div>
     </div>
