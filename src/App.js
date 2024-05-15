@@ -2,9 +2,9 @@ import React from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 /* LAYOUT */
-import AdminLayout from "./Components/AdminLayout";
+import AdminLayout from "./Components/adminLayout";
 import Layout from "./Components/Layout";
-import SellerLayout from "./Components/SellerLayout";
+import SellerLayout from "./Components/sellerLayout";
 /* PAGES ROUTES */
 import Home from "./Pages/Home";
 import Contact from "./Pages/Contact";
