@@ -177,8 +177,8 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section className="home-wrapper-2 py-5">
-        <div className="container-fluid">
+      <section className="home-wrapper-2 py-4">
+        <div className="container-xxl">
           <div className="row">
             <div className="col-12">
               <div className="services d-flex align-items-center justify-content-between">
@@ -222,8 +222,8 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section className="justforyou-wrapper home-wrapper-2 py-2">
-        <div className="container-fluid">
+      <section className="justforyou-wrapper home-wrapper-2 py-3">
+        <div className="container-xxl">
           <div className="row">
             <div className="col-12">
               <h3 className="section-heading mb-3">Just For You</h3>
