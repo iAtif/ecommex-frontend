@@ -70,9 +70,19 @@ const ProductCard = ({ products, grid }) => {
 
       const userId = JSON.parse(localStorage.getItem("auth"))?.user.userId;
 
+      const productResponse = await axios.get(
+        `http://localhost:5000/products/${productId}`
+      );
+
+      if (!productResponse.data.success) {
+        throw new Error("Failed to fetch product details");
+      }
+
+      const { minimumOrder } = productResponse.data.product;
+
       const response = await axios.post(
         "http://localhost:5000/cart/add",
-        { productId, userId },
+        { productId, userId, quantity: minimumOrder },
         { headers }
       );
 

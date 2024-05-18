@@ -92,10 +92,7 @@ const SellerOrder = () => {
           ? order.products.map((product) => product.productId.name).join(", ")
           : "No Products",
         quantity: order.products
-          ? order.products.reduce(
-              (total, product) => total + product.quantity,
-              0
-            )
+          ? order.products.map((product) => product.quantity).join(", ")
           : 0,
         totalAmount: `Rs. ${order.totalAmount}`,
         status: order.status,

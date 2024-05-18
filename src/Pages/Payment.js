@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Meta from "../Components/Meta";
 import BreadCrumb from "../Components/BreadCrumb";
-import { Link } from "react-router-dom";
 import Spinner from "../Components/Spinner";
 import toast from "react-hot-toast";
 
@@ -116,27 +115,6 @@ const Payment = () => {
           <div className="row">
             <div className="col-7">
               <div className="checkout-left-data">
-                <nav
-                  style={{ "--bs-breadcrumb-divider": ">" }}
-                  aria-label="breadcrumb"
-                >
-                  <ol className="breadcrumb">
-                    <Link
-                      className="breadcrumbs-item total-price active"
-                      aria-current="page"
-                      to={"/checkout-information"}
-                    >
-                      Information & Shipping
-                    </Link>
-                    &nbsp; / &nbsp;
-                    <li
-                      className="breadcrumbs-item text-dark total-price active"
-                      aria-current="page"
-                    >
-                      Payment
-                    </li>
-                  </ol>
-                </nav>
                 <h4 className="mb-3">Payment Information</h4>
                 <form
                   onSubmit={handleSubmit}

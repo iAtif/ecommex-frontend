@@ -176,6 +176,42 @@ const SingleProduct = () => {
     }
   };
 
+  const handleAddToCart = async () => {
+    try {
+      const token = JSON.parse(localStorage.getItem("auth"))?.token;
+      if (!token) {
+        toast.error("Please login first");
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const userId = JSON.parse(localStorage.getItem("auth"))?.user.userId;
+      if (quantity === 0 || quantity < product.minimumOrder) {
+        toast.error(
+          `Quantity must be greater or equal to ${product.minimumOrder}`
+        );
+        return;
+      }
+      const response = await axios.post(
+        "http://localhost:5000/cart/add",
+        { productId: product._id, userId, quantity },
+        { headers }
+      );
+
+      if (response.data.success) {
+        toast.success("Product added to Cart");
+      } else {
+        toast.error(response.data.message || "Failed to add product to Cart");
+      }
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      toast.error("Failed to add product to Cart");
+    }
+  };
+
   if (!product) {
     return <Spinner />;
   }
@@ -274,7 +310,12 @@ const SingleProduct = () => {
                       />
                     </div>
                     <div className="d-flex align-item-center gap-30 ms-5">
-                      <button className="button border-0">Add to Cart</button>
+                      <button
+                        className="button border-0"
+                        onClick={handleAddToCart}
+                      >
+                        Add to Cart
+                      </button>
                       <button className="button signup" onClick={handleBuyNow}>
                         Buy Now
                       </button>

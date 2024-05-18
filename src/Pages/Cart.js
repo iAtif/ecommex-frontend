@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import BreadCrumb from "../Components/BreadCrumb";
 import Meta from "../Components/Meta";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AiFillDelete } from "react-icons/ai";
 import axios from "axios";
 import Spinner from "../Components/Spinner";
+import toast from "react-hot-toast";
 
 const Cart = () => {
+  const navigate = useNavigate();
   const [cartProducts, setCartProducts] = useState([]);
+  const [subtotal, setSubtotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,20 +18,20 @@ const Cart = () => {
       try {
         const token = JSON.parse(localStorage.getItem("auth"))?.token;
         if (!token) {
-          throw new Error("Seller token not found");
+          throw new Error("User token not found");
         }
         const headers = {
           Authorization: `Bearer ${token}`,
         };
-        const response = await axios.get(
-          "http://localhost:5000/cart/cart-products",
-          { headers }
-        );
-        setCartProducts(response.data.products);
-        console.log(response.data.products);
-        setLoading(false);
+        const response = await axios.get("http://localhost:5000/cart", {
+          headers,
+        });
+        const products = response.data.cart.products;
+        setCartProducts(products);
+        calculateSubtotal(products);
       } catch (error) {
         console.error("Error fetching cart products:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -36,54 +39,53 @@ const Cart = () => {
     fetchCartProducts();
   }, []);
 
+  const calculateSubtotal = (products) => {
+    const total = products.reduce((acc, products) => {
+      const productTotal = products.product.payableAmount * products.quantity;
+      return acc + productTotal;
+    }, 0);
+    setSubtotal(total);
+  };
+
   const removeFromCart = async (productId) => {
     try {
       const token = JSON.parse(localStorage.getItem("auth"))?.token;
       if (!token) {
-        throw new Error("Seller token not found");
+        throw new Error("User token not found");
       }
       const headers = {
         Authorization: `Bearer ${token}`,
       };
       const response = await axios.delete(
         `http://localhost:5000/cart/remove/${productId}`,
-        { headers }
+        {
+          headers,
+        }
       );
-      console.log("Product removed from cart:", response.data);
+      const updatedProducts = response.data.cart.products;
+      setCartProducts(updatedProducts);
+      calculateSubtotal(updatedProducts);
+      toast.success("Product removed from Cart");
     } catch (error) {
       console.error("Error removing product from cart:", error);
     }
   };
 
-  const handleRemoveFromCart = async (productId) => {
-    try {
-      // Retrieve the authorization token from localStorage
-      const token = JSON.parse(localStorage.getItem("auth"))?.token;
-      if (!token) {
-        throw new Error("Seller token not found");
+  const handleQuantityChange = (productId, newQuantity) => {
+    const updatedProducts = cartProducts.map((products) => {
+      if (products.product._id === productId) {
+        return { ...products, quantity: newQuantity };
       }
-      // Include the token in the headers
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
+      return products;
+    });
+    setCartProducts(updatedProducts);
+    calculateSubtotal(updatedProducts);
+  };
 
-      // Call the remove from cart API endpoint
-      await removeFromCart(productId, headers);
-
-      // Fetch the updated cart data
-      const updatedCartResponse = await axios.get(
-        "http://localhost:5000/cart/cart-products",
-        { headers }
-      );
-
-      // Set the updated cart products to the state
-      setCartProducts(updatedCartResponse.data.products);
-
-      // Optionally, perform any other actions after updating the cart
-    } catch (error) {
-      // Handle error
-      console.error("Error updating cart after removing product:", error);
-    }
+  const handleCheckout = () => {
+    navigate("/cart-checkout", {
+      state: { cartProducts, totalAmount: subtotal },
+    });
   };
 
   if (loading) {
@@ -95,7 +97,7 @@ const Cart = () => {
       <Meta title={"Cart"} />
       <BreadCrumb items={[{ title: "Home", url: "/" }, { title: "Cart" }]} />
       <section className="cart-wrapper home-wrapper-2 py-3">
-        <div className="container-fluid">
+        <div className="container-fluid px-5">
           <div className="row">
             <div className="col-12">
               {cartProducts.length === 0 ? (
@@ -107,53 +109,61 @@ const Cart = () => {
                 </>
               ) : (
                 <>
-                  <div className="cart-header py-3 d-flex justify-content-between align-items-center">
-                    <h4 className="cart-col-1">Product</h4>
+                  <div className="cart-header py-2 d-flex justify-content-between align-items-center">
+                    <h4 className="cart-col-1">Products</h4>
                     <h4 className="cart-col-2">Price</h4>
                     <h4 className="cart-col-3">Quantity</h4>
                     <h4 className="cart-col-4">Total</h4>
                   </div>
-                  {cartProducts.map((product) => (
+                  {cartProducts.map((products) => (
                     <div
-                      key={product._id}
-                      className="cart-data mb-2 d-flex justify-content-between align-items-center"
+                      key={products.product._id}
+                      className="cart-data mb-3 d-flex justify-content-between align-items-center"
                     >
                       <div className="cart-col-1 gap-15 d-flex align-items-center">
-                        <div className="w-25">
+                        <div>
                           <img
-                            src={product.image} // Assuming there's an 'image' property in the product object
+                            src={products.product.images[0]}
                             className="img-fluid"
-                            alt={product.name} // Assuming there's a 'name' property in the product object
+                            alt={products.product.name}
                           />
                         </div>
                         <div>
-                          <p>{product.product.name}</p>
-                          {/* Add other product details here */}
+                          <p>{products.product.name}</p>
                         </div>
                       </div>
                       <div className="cart-col-2">
                         <h5 className="price">
-                          Rs. {product.product.price.amount}
+                          Rs. {products.product.payableAmount}
                         </h5>
                       </div>
-                      {/* Add input field for quantity and delete button */}
-                      <div className="cart-col-3 gap-10 d-flex align-items-center">
-                        <div>
+                      <div className="cart-col-3">
+                        <div className="d-flex align-items-center gap-10">
                           <input
                             type="number"
-                            min={product.product.minimumOrder}
-                            value={product.quantity}
+                            min={products.product.minimumOrder}
+                            max={100}
+                            value={products.quantity}
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                products.product._id,
+                                parseInt(e.target.value)
+                              )
+                            }
+                            className="form-control"
+                            style={{ width: "70px" }}
                           />
                           <AiFillDelete
-                            onClick={() =>
-                              handleRemoveFromCart(product.product._id)
-                            }
+                            onClick={() => removeFromCart(products.product.id)}
                             className="text-danger"
                           />
                         </div>
                       </div>
                       <div className="cart-col-4">
-                        <h5 className="price">Rs. {product.total}</h5>
+                        <h5 className="price">
+                          Rs.{" "}
+                          {products.product.payableAmount * products.quantity}
+                        </h5>
                       </div>
                     </div>
                   ))}
@@ -163,10 +173,13 @@ const Cart = () => {
                         Continue to Shopping
                       </Link>
                       <div className="d-flex flex-column align-items-end">
-                        {/* <h4>Subtotal: Rs. {subtotal}</h4> */}
-                        <Link to="/checkout" className="button">
+                        <h4>Subtotal: Rs. {subtotal}</h4>
+                        <button
+                          className="button mt-2"
+                          onClick={handleCheckout}
+                        >
                           Checkout
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   </div>

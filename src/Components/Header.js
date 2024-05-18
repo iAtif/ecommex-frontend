@@ -202,7 +202,7 @@ const Header = () => {
                       >
                         My Cart
                       </p>
-                      <span className="badge bg-white text-dark">0</span>
+                      {/* <span className="badge bg-white text-dark">0</span> */}
                     </div>
                   </Link>
                 </div>

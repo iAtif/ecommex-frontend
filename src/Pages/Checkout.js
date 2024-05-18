@@ -1,43 +1,120 @@
-import React from "react";
+import React, { useState } from "react";
 import Meta from "../Components/Meta";
 import { useLocation, useNavigate } from "react-router-dom";
 import BreadCrumb from "../Components/BreadCrumb";
 import { Link } from "react-router-dom";
 import { BiArrowBack } from "react-icons/bi";
+import Spinner from "../Components/Spinner";
+import toast from "react-hot-toast";
 
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { product, totalAmount, quantity } = location.state;
+  const [loading, setLoading] = useState(false);
   const authData = JSON.parse(localStorage.getItem("auth"));
   const { email, firstName, lastName, mobile } = authData.user;
+  const { product, totalAmount, quantity } = location.state;
+  const [paymentMethod, setPaymentMethod] = useState("");
 
-  const handlePayment = () => {
-    navigate("/checkout-payment", {
-      state: {
-        product,
-        totalAmount,
-        quantity,
-        orderInfo: JSON.parse(localStorage.getItem("orderInfo")),
-      },
-    });
-  };
-  const handleFormSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
 
-    const address = document.getElementById("address").value;
-    const mobile = document.getElementById("mobile").value;
-    const shippingMethod = document.getElementById("shippingMethod").value;
-    const paymentMethod = document.getElementById("paymentMethod").value;
+    // Retrieve form data
+    const formData = new FormData(event.target);
+    const paymentMethod = formData.get("paymentMethod");
 
-    const orderInfo = {
-      address: address,
-      mobile: mobile,
-      shippingMethod: shippingMethod,
-      paymentMethod: paymentMethod,
-    };
-    localStorage.setItem("orderInfo", JSON.stringify(orderInfo));
+    if (paymentMethod === "Credit-Card") {
+      const cardDetails = {
+        "card[number]": formData.get("cardNumber"),
+        "card[exp_month]": formData.get("expiryMonth"),
+        "card[exp_year]": formData.get("expiryYear"),
+        "card[cvc]": formData.get("cvc"),
+      };
+
+      try {
+        // Step 1: Fetch token from Stripe
+        const response = await fetch("https://api.stripe.com/v1/tokens", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization:
+              "Bearer pk_test_51P5iFC03QMjI8IJwEyDwckzaXFzj0eHoyEhTcLCWaURkyszkVkjHrLk7VtL0flCWuTrbsEOzyHjV294goqtBStl100JBRqZKM6",
+          },
+          body: new URLSearchParams(cardDetails).toString(),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error.message);
+        }
+
+        const tokenData = await response.json();
+
+        // Step 2: Create order
+        const orderDetails = {
+          customer: {
+            customerId: authData.user.userId,
+          },
+          products: [
+            {
+              productId: product.id,
+              quantity: quantity,
+              price: product.payableAmount,
+            },
+          ],
+          totalAmount: totalAmount,
+          paymentToken: tokenData.id,
+          currency: "pkr",
+          status: "Pending",
+          payment: {
+            method: "Credit-Card",
+          },
+          shipping: {
+            address: formData.get("address"),
+            mobile: mobile,
+            method: formData.get("shippingMethod"),
+          },
+        };
+
+        const token = authData.token;
+        const orderResponse = await fetch("http://localhost:5000/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(orderDetails),
+        });
+
+        if (!orderResponse.ok) {
+          const errorData = await orderResponse.json();
+          throw new Error(errorData.message);
+        }
+
+        const orderData = await orderResponse.json();
+        console.log("Order:", orderData);
+        toast.success("Order Confirm Successfully");
+        setLoading(false);
+        navigate("/");
+      } catch (error) {
+        console.log(error.message);
+        toast.error(error.message);
+        setLoading(false);
+      }
+    } else {
+      // Handle other payment methods like Cash on Delivery
+      // Implement logic here
+    }
   };
+
+  const handlePaymentMethodChange = (event) => {
+    setPaymentMethod(event.target.value);
+  };
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <>
@@ -55,26 +132,6 @@ const Checkout = () => {
           <div className="row">
             <div className="col-7">
               <div className="checkout-left-data">
-                <nav
-                  style={{ "--bs-breadcrumb-divider": ">" }}
-                  aria-label="breadcrumb"
-                >
-                  <ol className="breadcrumb">
-                    <li
-                      className="breadcrumbs-item text-dark  total-price active"
-                      aria-current="page"
-                    >
-                      Information & Shipping
-                    </li>
-                    &nbsp; / &nbsp;
-                    <li
-                      className="breadcrumbs-item  total-price active"
-                      aria-current="page"
-                    >
-                      Payment
-                    </li>
-                  </ol>
-                </nav>
                 <h4 className="title">Contact Information</h4>
                 <div className="d-flex flex-wrap gap-15 justify-content-between mb-3">
                   <div className="flex-grow-1">
@@ -115,9 +172,8 @@ const Checkout = () => {
                 </div>
                 <h4 className="title">Shipping Address</h4>
                 <form
-                  action=""
                   className="d-flex flex-wrap gap-15 justify-content-between"
-                  onClick={handleFormSubmit}
+                  onSubmit={handleSubmit}
                 >
                   <div className="w-100">
                     <input
@@ -125,6 +181,7 @@ const Checkout = () => {
                       placeholder="Complete Address"
                       className="form-control"
                       id="address"
+                      name="address"
                       required
                     />
                   </div>
@@ -147,9 +204,10 @@ const Checkout = () => {
                     <h4 className="title">Payment Method</h4>
                     <div className="flex-grow-1">
                       <select
-                        name="state"
+                        name="paymentMethod"
                         className="form-control form-select"
                         id="paymentMethod"
+                        onChange={handlePaymentMethodChange}
                         defaultValue=""
                         required
                       >
@@ -163,18 +221,80 @@ const Checkout = () => {
                       </select>
                     </div>
                   </div>
+                  {paymentMethod === "Credit-Card" && (
+                    <>
+                      <div className="w-100">
+                        <h4 className="title">Card Information</h4>
+                        <div className="w-100">
+                          <input
+                            type="text"
+                            name="cardNumber"
+                            placeholder="Card No"
+                            className="form-control"
+                            maxLength="16"
+                            required
+                          />
+                        </div>
+                        <div className="d-flex flex-wrap gap-15 justify-content-between mt-3">
+                          <div className="flex-grow-1">
+                            <select
+                              name="expiryMonth"
+                              className="form-control form-select"
+                              defaultValue=""
+                              required
+                            >
+                              <option value="" disabled hidden>
+                                Expiry Month
+                              </option>
+                              {[...Array(12).keys()].map((month) => (
+                                <option key={month + 1} value={month + 1}>
+                                  {month + 1}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex-grow-1">
+                            <select
+                              name="expiryYear"
+                              className="form-control form-select"
+                              defaultValue=""
+                              required
+                            >
+                              <option value="" disabled hidden>
+                                Expiry Year
+                              </option>
+                              {[...Array(6).keys()].map((index) => {
+                                const year = 2024 + index;
+                                return (
+                                  <option key={year} value={year}>
+                                    {year}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+                          <div className="flex-grow-1">
+                            <input
+                              type="text"
+                              name="cvc"
+                              className="form-control"
+                              placeholder="CVC"
+                              maxLength="3"
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="w-100 mt-4">
                     <div className="d-flex justify-content-between align-items-center">
-                      <Link to={`/store/${product.id}`} className="text-dark">
+                      <Link to={"/cart"} className="text-dark">
                         <BiArrowBack className="me-2" />
-                        Return to Product
+                        Return to Cart
                       </Link>
-                      <button
-                        onClick={handlePayment}
-                        className="button border-0"
-                        type="submit"
-                      >
-                        Continue to Payment
+                      <button className="button border-0" type="submit">
+                        Confirm Order
                       </button>
                     </div>
                   </div>
@@ -194,13 +314,9 @@ const Checkout = () => {
                     </div>
                     <div>
                       <h5 className="total-price">{product.name}</h5>
-                      <p className="total-price">{quantity} pieces</p>
+                      <p className="total-price mb-0">{quantity} pieces</p>
+                      <h5 className="total">Rs. {product.payableAmount}</h5>
                     </div>
-                  </div>
-                  <div className="flex-grow-1">
-                    <h5 className="total">
-                      {product.price.currency} {product.payableAmount}
-                    </h5>
                   </div>
                 </div>
               </div>

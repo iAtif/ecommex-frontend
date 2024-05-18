@@ -36,6 +36,7 @@ import ResetPassword from "./Pages/User/userResetPassword";
 import Dashboard from "./Pages/User/userDashboard";
 import Notifications from "./Pages/Notification";
 import Checkout from "./Pages/Checkout";
+import CartCheckout from "./Pages/cartCheckout";
 import Payment from "./Pages/Payment";
 /* SELLER ROUTES */
 import SellerLogin from "./Pages/WholeSeller/sellerLogin";
@@ -73,6 +74,7 @@ function App() {
               <Route path="trending" element={<TrendingProducts />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="checkout-information" element={<Checkout />} />
+              <Route path="cart-checkout" element={<CartCheckout />} />
               <Route path="checkout-payment" element={<Payment />} />
               <Route
                 path="subscription-payment"

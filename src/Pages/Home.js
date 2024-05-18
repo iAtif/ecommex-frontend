@@ -222,7 +222,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section className="justforyou-wrapper py-5 home-wrapper-2">
+      <section className="justforyou-wrapper home-wrapper-2 py-2">
         <div className="container-xxl">
           <div className="row">
             <div className="col-12">

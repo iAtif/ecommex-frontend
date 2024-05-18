@@ -37,7 +37,7 @@ const columns = [
     title: "Quantity",
     dataIndex: "products",
     render: (products) =>
-      products.reduce((total, product) => total + product.quantity, 0),
+      products.map((product) => product.quantity).join(", "),
   },
   {
     title: "Total Amount",
