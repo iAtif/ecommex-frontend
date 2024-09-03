@@ -37,7 +37,7 @@ ECOMMEX empowers startups and resellers by providing an intuitive platform that 
    ```
 2. Navigate to the project directory and install dependencies:
    ```bash
-   cd ECOMMEX
+   cd ecommex-frontend
    npm install
    ```
 3. Start the development server:
